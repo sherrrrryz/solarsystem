@@ -11,7 +11,7 @@ import { planets } from "@/data/planets";
 import { useSolarStore } from "@/store/useSolarStore";
 
 export function SolarSystem() {
-  const selectedPlanet = useSolarStore((s) => s.selectedPlanet);
+  const cameraAnimating = useSolarStore((s) => s.cameraAnimating);
 
   return (
     <>
@@ -42,9 +42,9 @@ export function SolarSystem() {
 
       <OrbitControls
         makeDefault
-        enablePan={!selectedPlanet}
-        enableZoom={!selectedPlanet}
-        enableRotate={!selectedPlanet}
+        enablePan={!cameraAnimating}
+        enableZoom={!cameraAnimating}
+        enableRotate={!cameraAnimating}
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={0.3}

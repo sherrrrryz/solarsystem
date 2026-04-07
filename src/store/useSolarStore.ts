@@ -6,15 +6,14 @@ import * as THREE from "three";
 interface SolarState {
   selectedPlanet: string | null;
   paused: boolean;
-  // Frozen elapsed time when paused (so planets hold position)
   frozenTime: number;
-  // Target position for camera to fly to
   targetPosition: THREE.Vector3 | null;
-  // Planet world position when selected
   planetPosition: THREE.Vector3 | null;
+  cameraAnimating: boolean;
 
   selectPlanet: (name: string, position: THREE.Vector3, currentTime: number) => void;
   clearSelection: () => void;
+  setCameraAnimating: (v: boolean) => void;
 }
 
 export const useSolarStore = create<SolarState>((set) => ({
@@ -23,14 +22,15 @@ export const useSolarStore = create<SolarState>((set) => ({
   frozenTime: 0,
   targetPosition: null,
   planetPosition: null,
+  cameraAnimating: false,
 
   selectPlanet: (name, position, currentTime) =>
     set({
       selectedPlanet: name,
       paused: true,
       frozenTime: currentTime,
+      cameraAnimating: true,
       planetPosition: position.clone(),
-      // Camera offset: to the right and slightly above, so planet sits on the left half
       targetPosition: new THREE.Vector3(
         position.x + 8,
         position.y + 3,
@@ -45,5 +45,8 @@ export const useSolarStore = create<SolarState>((set) => ({
       frozenTime: 0,
       targetPosition: null,
       planetPosition: null,
+      // cameraAnimating stays true — CameraAnimator will set it false when done
     }),
+
+  setCameraAnimating: (v) => set({ cameraAnimating: v }),
 }));

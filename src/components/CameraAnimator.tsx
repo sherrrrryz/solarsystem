@@ -12,41 +12,47 @@ const ARRIVAL_THRESHOLD = 0.5;
 
 export function CameraAnimator() {
   const { camera } = useThree();
+  const controls = useThree((s) => s.controls) as any;
   const currentLookAt = useRef(new THREE.Vector3(0, 0, 0));
-  // Track whether we're actively animating back to initial position
   const returningHome = useRef(false);
 
   const selectedPlanet = useSolarStore((s) => s.selectedPlanet);
   const targetPosition = useSolarStore((s) => s.targetPosition);
   const planetPosition = useSolarStore((s) => s.planetPosition);
+  const setCameraAnimating = useSolarStore((s) => s.setCameraAnimating);
   const prevSelected = useRef<string | null>(null);
 
   useFrame((_, delta) => {
     const t = Math.min(LERP_SPEED * delta, 1);
 
-    // Detect transition from selected -> deselected
     if (prevSelected.current && !selectedPlanet) {
       returningHome.current = true;
     }
     prevSelected.current = selectedPlanet;
 
     if (selectedPlanet && targetPosition && planetPosition) {
-      // Fly to planet
       camera.position.lerp(targetPosition, t);
       currentLookAt.current.lerp(planetPosition, t);
       camera.lookAt(currentLookAt.current);
+      if (controls) controls.target.copy(currentLookAt.current);
     } else if (returningHome.current) {
-      // Animate back to initial position
       camera.position.lerp(INITIAL_POSITION, t);
       currentLookAt.current.lerp(INITIAL_LOOKAT, t);
       camera.lookAt(currentLookAt.current);
+      if (controls) controls.target.copy(currentLookAt.current);
 
-      // Stop animating once close enough — hand control back to OrbitControls
       if (camera.position.distanceTo(INITIAL_POSITION) < ARRIVAL_THRESHOLD) {
         returningHome.current = false;
+        // Snap to exact position and re-enable OrbitControls
+        camera.position.copy(INITIAL_POSITION);
+        currentLookAt.current.copy(INITIAL_LOOKAT);
+        if (controls) {
+          controls.target.copy(INITIAL_LOOKAT);
+          controls.update();
+        }
+        setCameraAnimating(false);
       }
     }
-    // When not selected and not returning: do nothing, let OrbitControls drive
   });
 
   return null;
