@@ -7,6 +7,9 @@ export interface PlanetData {
   rotationSpeed: number;
   roughness: number;
   metalness: number;
+  textureUrl: string;
+  atmosphereColor?: string;
+  atmosphereScale?: number;
   hasRings?: boolean;
   ringColor?: string;
   ringInner?: number;
@@ -23,6 +26,8 @@ export const planets: PlanetData[] = [
     rotationSpeed: 0.5,
     roughness: 1.0,
     metalness: 0.02,
+    textureUrl: "/textures/mercury.jpg",
+    // No atmosphere
   },
   {
     name: "Venus",
@@ -33,6 +38,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 0.4,
     roughness: 0.6,
     metalness: 0.05,
+    textureUrl: "/textures/venus.jpg",
+    atmosphereColor: "#E8CDA0",
+    atmosphereScale: 1.12,
   },
   {
     name: "Earth",
@@ -43,6 +51,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 1.0,
     roughness: 0.5,
     metalness: 0.01,
+    textureUrl: "/textures/earth.jpg",
+    atmosphereColor: "#6B93D6",
+    atmosphereScale: 1.15,
   },
   {
     name: "Mars",
@@ -53,6 +64,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 0.9,
     roughness: 0.75,
     metalness: 0.02,
+    textureUrl: "/textures/mars.jpg",
+    atmosphereColor: "#C1440E",
+    atmosphereScale: 1.08,
   },
   {
     name: "Jupiter",
@@ -63,6 +77,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 2.0,
     roughness: 0.9,
     metalness: 0.0,
+    textureUrl: "/textures/jupiter.jpg",
+    atmosphereColor: "#D8CA9D",
+    atmosphereScale: 1.08,
   },
   {
     name: "Saturn",
@@ -73,6 +90,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 1.8,
     roughness: 0.9,
     metalness: 0.0,
+    textureUrl: "/textures/saturn.jpg",
+    atmosphereColor: "#EAD6B8",
+    atmosphereScale: 1.08,
     hasRings: true,
     ringColor: "#C8A95E",
     ringInner: 2.8,
@@ -87,6 +107,9 @@ export const planets: PlanetData[] = [
     rotationSpeed: 1.2,
     roughness: 0.85,
     metalness: 0.0,
+    textureUrl: "/textures/uranus.jpg",
+    atmosphereColor: "#D1E7E7",
+    atmosphereScale: 1.1,
   },
   {
     name: "Neptune",
@@ -97,5 +120,8 @@ export const planets: PlanetData[] = [
     rotationSpeed: 1.1,
     roughness: 0.85,
     metalness: 0.0,
+    textureUrl: "/textures/neptune.jpg",
+    atmosphereColor: "#5B5DDF",
+    atmosphereScale: 1.1,
   },
 ];

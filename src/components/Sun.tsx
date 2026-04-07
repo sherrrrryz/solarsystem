@@ -1,64 +1,112 @@
 "use client";
 
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
+
+const glowVertexShader = `
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const glowFragmentShader = `
+  uniform vec3 glowColor;
+  uniform float power;
+  uniform float opacity;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  void main() {
+    float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
+    float intensity = pow(rim, power);
+    gl_FragColor = vec4(glowColor, intensity * opacity);
+  }
+`;
 
 export function Sun() {
   const coreRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
-  const outerGlowRef = useRef<THREE.Mesh>(null);
+  const sunTexture = useLoader(THREE.TextureLoader, "/textures/sun.jpg");
 
   useFrame((_, delta) => {
     if (coreRef.current) {
-      coreRef.current.rotation.y += delta * 0.1;
-    }
-    if (glowRef.current) {
-      glowRef.current.rotation.y -= delta * 0.05;
-      glowRef.current.rotation.x += delta * 0.03;
-    }
-    if (outerGlowRef.current) {
-      outerGlowRef.current.rotation.z += delta * 0.02;
+      coreRef.current.rotation.y += delta * 0.05;
     }
   });
 
   return (
     <group>
-      {/* Inner core - bright hot center */}
+      {/* Sun core */}
       <mesh ref={coreRef}>
-        <sphereGeometry args={[4.8, 48, 48]} />
-        <meshStandardMaterial
-          color="#fff5cc"
-          emissive="#FDB813"
-          emissiveIntensity={2}
-          toneMapped={false}
-        />
+        <sphereGeometry args={[5, 64, 64]} />
+        <meshBasicMaterial map={sunTexture} toneMapped={false} />
       </mesh>
 
-      {/* Mid glow layer - adds depth and warmth */}
-      <mesh ref={glowRef}>
+      {/* Inner corona - tight rim glow */}
+      <mesh>
         <sphereGeometry args={[5.2, 32, 32]} />
-        <meshBasicMaterial
-          color="#FFA500"
+        <shaderMaterial
+          vertexShader={glowVertexShader}
+          fragmentShader={glowFragmentShader}
+          uniforms={{
+            glowColor: { value: new THREE.Color(1.0, 0.85, 0.3) },
+            power: { value: 2.5 },
+            opacity: { value: 1.0 },
+          }}
           transparent
-          opacity={0.35}
+          depthWrite={false}
           side={THREE.FrontSide}
+          blending={THREE.AdditiveBlending}
         />
       </mesh>
 
-      {/* Outer glow - soft corona */}
-      <mesh ref={outerGlowRef}>
-        <sphereGeometry args={[6.5, 32, 32]} />
-        <meshBasicMaterial
-          color="#FF8C00"
+      {/* Outer halo - soft wide glow */}
+      <mesh>
+        <sphereGeometry args={[8, 32, 32]} />
+        <shaderMaterial
+          vertexShader={glowVertexShader}
+          fragmentShader={glowFragmentShader}
+          uniforms={{
+            glowColor: { value: new THREE.Color(1.0, 0.5, 0.05) },
+            power: { value: 1.2 },
+            opacity: { value: 0.6 },
+          }}
           transparent
-          opacity={0.1}
-          side={THREE.FrontSide}
+          depthWrite={false}
+          side={THREE.BackSide}
+          blending={THREE.AdditiveBlending}
         />
       </mesh>
 
-      {/* Light source */}
-      <pointLight position={[0, 0, 0]} intensity={1000} color="#ffff99" />
+      {/* Wide diffuse outer halo */}
+      <mesh>
+        <sphereGeometry args={[13, 32, 32]} />
+        <shaderMaterial
+          vertexShader={glowVertexShader}
+          fragmentShader={glowFragmentShader}
+          uniforms={{
+            glowColor: { value: new THREE.Color(0.8, 0.3, 0.0) },
+            power: { value: 0.8 },
+            opacity: { value: 0.25 },
+          }}
+          transparent
+          depthWrite={false}
+          side={THREE.BackSide}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Sun point light */}
+      <pointLight
+        position={[0, 0, 0]}
+        intensity={10}
+        distance={1000}
+        decay={0.5}
+      />
     </group>
   );
 }
